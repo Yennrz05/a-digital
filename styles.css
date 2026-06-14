@@ -409,9 +409,10 @@ h4 {
   left: 0;
   right: 0;
   display: flex;
-  gap: 6px;
-  padding: 8px;
-  background: linear-gradient(0deg, rgba(0, 0, 0, 0.7) 0%, transparent 100%);
+  align-items: center;
+  gap: 4px;
+  padding: 6px 8px;
+  background: linear-gradient(0deg, rgba(0, 0, 0, 0.75) 0%, transparent 100%);
   opacity: 0;
   transition: opacity 0.3s;
 }
@@ -419,23 +420,76 @@ h4 {
   opacity: 1;
 }
 .video-ctrl-btn {
-  width: 32px;
-  height: 32px;
-  border-radius: 8px;
-  background: color-mix(in oklab, #fff 15%, transparent);
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  background: none;
   color: #fff;
   border: none;
   cursor: pointer;
   display: grid;
   place-items: center;
   transition: background 0.2s;
+  flex-shrink: 0;
 }
 .video-ctrl-btn:hover {
-  background: color-mix(in oklab, #fff 25%, transparent);
+  background: color-mix(in oklab, #fff 20%, transparent);
 }
 .video-ctrl-btn svg {
-  width: 16px;
-  height: 16px;
+  width: 14px;
+  height: 14px;
+}
+.video-progress {
+  flex: 1;
+  position: relative;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  margin: 0 4px;
+}
+.video-progress-track {
+  width: 100%;
+  height: 4px;
+  border-radius: 2px;
+  background: color-mix(in oklab, #fff 25%, transparent);
+  position: relative;
+  overflow: hidden;
+}
+.video-progress-fill {
+  height: 100%;
+  width: 0%;
+  border-radius: 2px;
+  background: var(--turquoise);
+  transition: width 0.1s linear;
+}
+.video-progress-thumb {
+  position: absolute;
+  top: 50%;
+  left: 0%;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #fff;
+  transform: translate(-50%, -50%);
+  opacity: 0;
+  transition: opacity 0.2s;
+  pointer-events: none;
+}
+.video-progress:hover .video-progress-thumb {
+  opacity: 1;
+}
+.video-progress:hover .video-progress-track {
+  height: 6px;
+}
+.video-time {
+  font-size: 0.65rem;
+  color: color-mix(in oklab, #fff 70%, transparent);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  flex-shrink: 0;
+  min-width: 60px;
+  text-align: right;
 }
 .laptop-base {
   position: relative;
@@ -1879,12 +1933,23 @@ h4 {
     display: none;
   }
   .video-ctrl-btn {
-    width: 26px;
-    height: 26px;
+    width: 24px;
+    height: 24px;
   }
   .video-ctrl-btn svg {
-    width: 12px;
-    height: 12px;
+    width: 11px;
+    height: 11px;
+  }
+  .laptop-video-controls {
+    padding: 4px 6px;
+    gap: 3px;
+  }
+  .video-progress {
+    margin: 0 2px;
+  }
+  .video-time {
+    font-size: 0.55rem;
+    min-width: 48px;
   }
   .playlist-items {
     max-height: 180px;

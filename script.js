@@ -65,7 +65,13 @@ if (navLinks) {
 // YouTube player
 const playerDiv = document.getElementById('playerVideo');
 const videoPlayBtn = document.getElementById('videoPlayBtn');
+const videoRewindBtn = document.getElementById('videoRewindBtn');
+const videoForwardBtn = document.getElementById('videoForwardBtn');
 const videoMuteBtn = document.getElementById('videoMuteBtn');
+const videoProgress = document.getElementById('videoProgress');
+const videoProgressFill = document.getElementById('videoProgressFill');
+const videoProgressThumb = document.getElementById('videoProgressThumb');
+const videoTime = document.getElementById('videoTime');
 const playerTag = document.getElementById('playerTag');
 const playerTitle = document.getElementById('playerTitle');
 const playerDesc = document.getElementById('playerDesc');
@@ -73,6 +79,14 @@ const playerCounter = document.getElementById('playerCounter');
 let player;
 let isPlaying = true;
 let isMuted = true;
+let progressTimer = null;
+
+function formatTime(s) {
+  if (isNaN(s) || s < 0) return '0:00';
+  const m = Math.floor(s / 60);
+  const sec = Math.floor(s % 60);
+  return `${m}:${String(sec).padStart(2, '0')}`;
+}
 
 function onYouTubeIframeAPIReady() {
   player = new YT.Player('playerVideo', {
@@ -86,14 +100,50 @@ function onYouTubeIframeAPIReady() {
       showinfo: 0
     },
     events: {
-      onStateChange: onPlayerStateChange
+      onStateChange: onPlayerStateChange,
+      onReady: onPlayerReady
     }
   });
+}
+
+function onPlayerReady() {
+  updateProgress();
 }
 
 function onPlayerStateChange(event) {
   isPlaying = event.data === YT.PlayerState.PLAYING;
   updatePlayBtn();
+  if (isPlaying) {
+    startProgressTimer();
+  } else {
+    stopProgressTimer();
+  }
+}
+
+function startProgressTimer() {
+  stopProgressTimer();
+  progressTimer = setInterval(updateProgress, 250);
+}
+
+function stopProgressTimer() {
+  if (progressTimer) {
+    clearInterval(progressTimer);
+    progressTimer = null;
+  }
+}
+
+function updateProgress() {
+  if (!player || !player.getCurrentTime) return;
+  const current = player.getCurrentTime();
+  const duration = player.getDuration();
+  if (duration > 0) {
+    const pct = (current / duration) * 100;
+    videoProgressFill.style.width = `${pct}%`;
+    videoProgressThumb.style.left = `${pct}%`;
+  }
+  if (videoTime) {
+    videoTime.textContent = `${formatTime(current)} / ${formatTime(duration)}`;
+  }
 }
 
 function updatePlayBtn() {
@@ -121,6 +171,23 @@ if (videoPlayBtn) {
   });
 }
 
+if (videoRewindBtn) {
+  videoRewindBtn.addEventListener('click', () => {
+    if (!player) return;
+    const t = player.getCurrentTime();
+    player.seekTo(Math.max(0, t - 10), true);
+  });
+}
+
+if (videoForwardBtn) {
+  videoForwardBtn.addEventListener('click', () => {
+    if (!player) return;
+    const t = player.getCurrentTime();
+    const d = player.getDuration();
+    player.seekTo(Math.min(d, t + 10), true);
+  });
+}
+
 if (videoMuteBtn) {
   videoMuteBtn.addEventListener('click', () => {
     if (!player) return;
@@ -132,6 +199,45 @@ if (videoMuteBtn) {
       isMuted = true;
     }
     updateMuteBtn();
+  });
+}
+
+if (videoProgress) {
+  let isDragging = false;
+
+  function seekFromEvent(e) {
+    if (!player) return;
+    const rect = videoProgress.getBoundingClientRect();
+    const x = (e.clientX || (e.touches && e.touches[0].clientX)) - rect.left;
+    const pct = Math.max(0, Math.min(1, x / rect.width));
+    const duration = player.getDuration();
+    player.seekTo(pct * duration, true);
+  }
+
+  videoProgress.addEventListener('mousedown', (e) => {
+    isDragging = true;
+    seekFromEvent(e);
+  });
+
+  document.addEventListener('mousemove', (e) => {
+    if (isDragging) seekFromEvent(e);
+  });
+
+  document.addEventListener('mouseup', () => {
+    isDragging = false;
+  });
+
+  videoProgress.addEventListener('touchstart', (e) => {
+    isDragging = true;
+    seekFromEvent(e);
+  }, { passive: true });
+
+  document.addEventListener('touchmove', (e) => {
+    if (isDragging) seekFromEvent(e);
+  }, { passive: true });
+
+  document.addEventListener('touchend', () => {
+    isDragging = false;
   });
 }
 
